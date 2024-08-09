@@ -22,7 +22,9 @@ async function main() {
     const baseURL = process.argv[2]
     console.log(`starting processing of: ${baseURL}...`)
   
-    await crawlPage(baseURL)
+    const pages =await crawlPage(baseURL)
+
+    console.log("Pages", pages)
 }
   
 main()

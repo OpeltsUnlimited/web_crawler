@@ -30,27 +30,66 @@ function getURLsFromHTML(htmlBody, htmlRoot) {
   return urls
 }
 
-async function crawlPage(currentURL) {
-  console.log(`crawlPage ${currentURL}`)
-
+// preveous part of crawlPage
+async function fetchHtml(url) {
   let reply
   try {
-    reply = await fetch(currentURL)
+    reply = await fetch(url)
   } catch(error) {
     throw new Error(`cant fetch ${error.message}`)
   }
 
   if (reply.status >= 400) {
-    console.log(`HTTP error: ${reply.status} ${reply.statusText}`)
-    return
+    throw new Error(`HTTP error: ${reply.status} ${reply.statusText}`)
   }
 
   const contentType = reply.headers.get('content-type')
   if (!contentType || !contentType.includes('text/html')) {
-    console.log(`response not html ${contentType}`)
-    return
+    throw new Error(`response not html ${contentType}`)
   }
-  console.log(await reply.text())
+
+  return await reply.text()
+}
+
+async function crawlPage(baseUrl, currentURL = baseUrl, pages = {}) {
+  // check if on.base
+  const currentUrlObj = new URL(currentURL)
+  const baseUrlObj = new URL(baseUrl)
+  if (currentUrlObj.hostname !== baseUrlObj.hostname) {
+    return pages
+  }
+
+  // same url format everywhere
+  const normalizedUrl = normalizeURL(currentURL)
+
+  // check how often we visited the page
+  // and only visit once
+  if (pages[normalizedUrl] > 0) {
+    pages[normalizedUrl]++
+    return pages
+  }
+
+  // first visit
+  pages[normalizedUrl] = 1
+
+  // fetch data
+  console.log(`crawlPage ${currentURL}`)
+
+  let html = ''
+  try {
+    html = await fetchHtml(currentURL)
+  } catch (error) {
+    console.log(`${error.message}`)
+    return pages
+  }
+
+  // get content
+  const containedUrls = getURLsFromHTML(html, baseUrl)
+  for (const url of containedUrls) {
+    pages = await crawlPage(baseUrl, url, pages)
+  }
+
+  return pages
 }
 
 export { normalizeURL, getURLsFromHTML, crawlPage};
