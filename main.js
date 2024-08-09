@@ -4,7 +4,9 @@
 //  npm run start BASE_URL
 // run test "npm test"  <- setrup in "package.json"
 
-function main() {
+import { crawlPage } from "./crawl.js"
+
+async function main() {
     if(process.argv.length < 1) {
         return
     }
@@ -19,6 +21,8 @@ function main() {
     }
     const baseURL = process.argv[2]
     console.log(`starting processing of: ${baseURL}...`)
+  
+    await crawlPage(baseURL)
 }
   
 main()
