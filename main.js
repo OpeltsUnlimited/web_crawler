@@ -5,6 +5,7 @@
 // run test "npm test"  <- setrup in "package.json"
 
 import { crawlPage } from "./crawl.js"
+import { printReport } from './report.js'
 
 async function main() {
     if(process.argv.length < 1) {
@@ -24,7 +25,7 @@ async function main() {
   
     const pages =await crawlPage(baseURL)
 
-    console.log("Pages", pages)
+    printReport(pages)
 }
   
 main()
